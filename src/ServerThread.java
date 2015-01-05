@@ -8,11 +8,11 @@ import java.net.Socket;
 /**
  * Created by Administrator on 2014/12/22.
  */
-public class ServerThread extends Thread
+public class ServerThread implements Runnable
 {
     Socket socket;
-    private static ObjectInputStream ois;
-    private static ObjectOutputStream oos;
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
     public ServerThread(Socket socket)
     {
         this.socket = socket;
@@ -43,6 +43,8 @@ public class ServerThread extends Thread
     {
         if(object instanceof Message) {
             onMessage((Message) object);
+        } else if(object instanceof String) {
+            onMessage((String) object);
         }
     }
 
@@ -53,6 +55,27 @@ public class ServerThread extends Thread
             oos.writeObject(new Message("Server Response"));
             oos.flush();
         } catch (IOException e) {
+            try {
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            e.printStackTrace();
+        }
+    }
+
+    public void onMessage(String message)
+    {
+        System.out.println(message);
+        try {
+            oos.writeObject(message);
+            oos.flush();
+        } catch (IOException e) {
+            try {
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
         }
     }
